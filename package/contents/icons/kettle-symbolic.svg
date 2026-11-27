@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <style>.c{fill:none;stroke:#232629;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}</style>
+  <!-- steam -->
+  <path class="c" d="M28 6c-3 3 3 5 0 8M36 4c-3 3 3 5 0 8" opacity=".7"/>
+  <!-- lid knob + lid -->
+  <path class="c" d="M28 19h8M22 24h20"/>
+  <!-- body -->
+  <path class="c" d="M20 24l-4 30a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4l-4-30z"/>
+  <!-- handle -->
+  <path class="c" d="M45 30h5a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5h-3"/>
+  <!-- spout -->
+  <path class="c" d="M18.5 34L9 27"/>
+  <!-- base -->
+  <path class="c" d="M14 61h36"/>
+</svg>
