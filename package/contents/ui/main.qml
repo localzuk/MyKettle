@@ -1,7 +1,8 @@
 /*
  * MyKettle - KDE Plasma 6 widget for Tuya / SETTI+ smart kettles.
  * Talks to the local "mykettle" backend service on 127.0.0.1.
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import QtQuick
 import QtQuick.Layouts

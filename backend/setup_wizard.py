@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 MyKettle interactive setup wizard.
 
@@ -515,7 +517,7 @@ def verify_power(cfg: dict):
 # --------------------------------------------------------------------------
 def main():
     print(f"""
-{B}{C}  ☕  MyKettle setup{N}  {D}v{mk.__version__}{N}
+{B}{C}  ☕  MyKettle setup{N}  {D}v{mk.__version__} · {mk.COPYRIGHT} · {mk.LICENSE_NAME}{N}
 {wrap('''
 This wizard connects the Plasma widget to your Tuya / SETTI+ kettle (e.g. GÖTZE &
 JENSEN KT975K) over your local network - no cloud needed once set up.
@@ -545,7 +547,12 @@ nothing is saved until the end.''')}""")
             ]
             if mk.config_ready(old):
                 opts.append(f"Keep the current kettle ({old.get('name')}, {old.get('device_id')}) and just redo the network/DP steps")
+            opts.append(f"{D}About MyKettle - version, licence, third-party libraries{N}")
+            about = len(opts)
             c = choose("Choose", opts, 4 if mk.config_ready(old) else 1)
+            if c == about:
+                mk.about_interactive(B, D, N)
+                continue
             if c == 1:
                 dev = credentials_from_cloud()
             elif c == 2:

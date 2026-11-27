@@ -1,6 +1,7 @@
 /*
  * Popup: setup guide when not configured, otherwise the kettle controls.
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 import QtQuick
 import QtQuick.Layouts

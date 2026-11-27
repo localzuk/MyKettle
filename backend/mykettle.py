@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+# SPDX-License-Identifier: GPL-3.0-or-later
 """
 MyKettle backend - local control of a Tuya / SETTI+ smart kettle.
 
@@ -14,6 +16,7 @@ Subcommands
     scan             look for Tuya devices on the local network
     learn            watch the kettle and print every data point that changes
     doctor           check the installation and print hints
+    about            version, copyright, third-party libraries and licences
 """
 
 from __future__ import annotations
@@ -34,7 +37,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 
 APP = "mykettle"
 CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / APP
@@ -709,6 +712,160 @@ def cmd_doctor(args):
     sys.exit(0 if ok else 1)
 
 
+# --------------------------------------------------------------------------
+# About / third-party components and licences
+# --------------------------------------------------------------------------
+COPYRIGHT = "Copyright © 2026 Tony Ayre <me@tonyayre.net>"
+LICENSE_NAME = "GPL-3.0-or-later"
+LICENSE_FILES = ("LICENSE", "LICENCE", "COPYING", "NOTICE", "AUTHORS")
+
+# Parts of the widget that come from the desktop itself (not bundled).
+SYSTEM_COMPONENTS = [
+    ("Python", "%d.%d.%d" % sys.version_info[:3], "PSF-2.0",
+     "https://www.python.org", "runs the backend and wizard"),
+    ("Qt 6 / Qt Quick", "system", "LGPL-3.0-only", "https://www.qt.io", "widget user interface"),
+    ("KDE Frameworks (Kirigami, KCMUtils)", "system", "LGPL-2.1-or-later", "https://kde.org", "widget user interface"),
+    ("KDE Plasma libraries", "system", "LGPL-2.0-or-later / GPL-2.0-or-later",
+     "https://kde.org/plasma-desktop", "panel widget host (plasmoid, components, plasma5support)"),
+]
+
+
+def _dist_license(dist) -> str:
+    md = dist.metadata
+    lic = md.get("License-Expression") or ""
+    if not lic:
+        raw = (md.get("License") or "").strip()
+        if raw and "\n" not in raw and len(raw) < 60:
+            lic = raw
+    if not lic:
+        cls = [c.split("::")[-1].strip() for c in (md.get_all("Classifier") or []) if c.startswith("License ::")]
+        lic = " / ".join(c for c in cls if c != "OSI Approved")
+    return lic or "see licence file"
+
+
+def _dist_url(dist) -> str:
+    md = dist.metadata
+    if md.get("Home-page"):
+        return md["Home-page"]
+    for entry in md.get_all("Project-URL") or []:
+        label, _, url = entry.partition(",")
+        if label.strip().lower() in ("homepage", "source", "source code", "repository", "github"):
+            return url.strip()
+    urls = [u.partition(",")[2].strip() for u in md.get_all("Project-URL") or []]
+    urls = [u for u in urls if not any(x in u.lower() for x in ("change", "issue", "news", "release"))] or urls
+    return urls[0] if urls else ""
+
+
+def python_components(root: str = "tinytuya") -> list:
+    """tinytuya plus everything it pulls in, read from the installed packages."""
+    import re
+    from importlib import metadata
+
+    seen: dict[str, object] = {}
+    parent: dict[str, str] = {}
+    todo = [root]
+    while todo:
+        name = todo.pop(0)
+        key = name.lower().replace("_", "-")
+        if key in seen:
+            continue
+        try:
+            dist = metadata.distribution(name)
+        except metadata.PackageNotFoundError:
+            continue
+        seen[key] = dist
+        for req in dist.requires or []:
+            if "extra ==" in req:          # optional extras are not installed
+                continue
+            m = re.match(r"\s*([A-Za-z0-9][A-Za-z0-9._-]*)", req)
+            if m:
+                todo.append(m.group(1))
+                parent.setdefault(m.group(1).lower().replace("_", "-"), dist.metadata["Name"])
+    for key, dist in seen.items():
+        dist.required_by = parent.get(key)
+    return list(seen.values())
+
+
+def components() -> list[dict]:
+    """Every component, as dicts: name, version, license, url, role, dist/file."""
+    here = Path(__file__).resolve().parent
+    own_license = next((p for p in (here / "LICENSE", here.parent / "LICENSE") if p.exists()), None)
+    out = [{"name": "MyKettle", "version": __version__, "license": LICENSE_NAME,
+            "url": "", "role": COPYRIGHT, "file": own_license}]
+    for d in python_components():
+        name = d.metadata["Name"]
+        out.append({"name": name, "version": d.version, "license": _dist_license(d), "url": _dist_url(d),
+                    "role": "Tuya LAN protocol" if name.lower() == "tinytuya"
+                    else f"required by {getattr(d, 'required_by', None) or 'tinytuya'}",
+                    "dist": d})
+    for name, ver, lic, url, role in SYSTEM_COMPONENTS:
+        out.append({"name": name, "version": ver, "license": lic, "url": url, "role": role + " (provided by your system)"})
+    return out
+
+
+def license_text(comp: dict) -> str | None:
+    if comp.get("file"):
+        return Path(comp["file"]).read_text(encoding="utf-8", errors="replace")
+    dist = comp.get("dist")
+    if dist is None:
+        return None
+    texts = []
+    for f in dist.files or []:
+        base = f.name.upper()
+        if any(base.startswith(n) for n in LICENSE_FILES):
+            try:
+                texts.append(f"===== {f} =====\n" + Path(dist.locate_file(f)).read_text(encoding="utf-8", errors="replace"))
+            except OSError:
+                pass
+    return "\n\n".join(texts) or None
+
+
+def print_components(comps: list[dict], bold="", dim="", reset="") -> None:
+    print(f"\n  {bold}MyKettle {__version__}{reset}  {COPYRIGHT}")
+    print(f"  Licensed under the GNU General Public License v3 or later; no warranty.\n")
+    print(f"  {bold}{'#':>3}  {'Component':<36} {'Version':<10} Licence{reset}")
+    for i, c in enumerate(comps, 1):
+        print(f"  {i:>3}  {c['name'][:36]:<36} {str(c['version'])[:10]:<10} {c['license']}")
+        detail = c["role"] + (f" - {c['url']}" if c.get("url") else "")
+        print(f"       {dim}{detail}{reset}")
+    print(f"\n  {dim}Tuya, Smart Life, SETTI+ and GÖTZE & JENSEN are trademarks of their owners;"
+          f" MyKettle is not affiliated with them.{reset}")
+
+
+def about_interactive(bold="", dim="", reset="") -> None:
+    """List components; let the user open any licence text in a pager."""
+    import pydoc
+    comps = components()
+    while True:
+        print_components(comps, bold, dim, reset)
+        if not sys.stdin.isatty():
+            return
+        v = input(f"\n  Type a number to read its licence text, or press Enter to go back: ").strip()
+        if not v:
+            return
+        if v.isdigit() and 1 <= int(v) <= len(comps):
+            c = comps[int(v) - 1]
+            text = license_text(c)
+            if text:
+                pydoc.pager(f"{c['name']} {c['version']} - {c['license']}\n\n{text}")
+            else:
+                print(f"\n  {c['name']} is part of your system; its licence is {c['license']}."
+                      + (f" See {c['url']}" if c.get("url") else ""))
+                input(f"  {dim}Press Enter…{reset}")
+
+
+def cmd_about(args):
+    if args.license:
+        comps = components()
+        match = [c for c in comps if c["name"].lower() == args.license.lower()]
+        text = license_text(match[0]) if match else None
+        if not text:
+            sys.exit(f"No licence text found for '{args.license}'.")
+        print(text)
+    else:
+        about_interactive()
+
+
 def cmd_setup(args):
     import setup_wizard
     setup_wizard.main()
@@ -735,6 +892,10 @@ def main(argv=None):
     s.add_argument("--seconds", type=int, default=60)
     s.set_defaults(fn=cmd_learn)
     sub.add_parser("doctor", help="check installation").set_defaults(fn=cmd_doctor)
+    s = sub.add_parser("about", aliases=["licenses", "licences"],
+                       help="version, copyright, third-party components and their licences")
+    s.add_argument("--license", metavar="NAME", help="print the full licence text of one component")
+    s.set_defaults(fn=cmd_about)
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")

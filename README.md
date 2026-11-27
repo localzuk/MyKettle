@@ -1,5 +1,7 @@
 # ☕ MyKettle
 
+*Version 0.1.0*
+
 A KDE Plasma 6 widget for Tuya-based smart kettles that you'd normally control with the **SETTI+** app, such as the **GÖTZE & JENSEN KT975K**. It controls the kettle directly over your Wi-Fi, with no cloud involved once it's set up.
 
 * live water temperature in the panel, with a pulsing icon while heating
@@ -35,4 +37,12 @@ Backend API (localhost only; `POST` requests must send `X-MyKettle: 1`):
 * `POST /api/set`     – `{"values": {"temp_set": 80, "power": true}}`; keys are role names or DP numbers
 * `POST /api/reload`  – re-read the config file
 
-Licence: GPL-2.0-or-later. Not affiliated with Tuya, SETTI+ or GÖTZE & JENSEN.
+## Licence
+
+Copyright © 2026 Tony Ayre <me@tonyayre.net>
+
+MyKettle is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY. See [LICENSE](LICENSE) for details.
+
+To see the third-party libraries MyKettle uses and their licences, run `mykettle about`, or choose *About MyKettle* in the setup wizard.
+
+MyKettle is not affiliated with Tuya, SETTI+ or GÖTZE & JENSEN. All trademarks belong to their owners.

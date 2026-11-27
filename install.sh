@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # MyKettle installer - KDE Plasma 6 widget + local backend for Tuya/SETTI+ kettles.
 # Installs everything into your home directory; no root needed (except, if
 # missing, for installing python venv support with your package manager).
@@ -22,7 +24,7 @@ die()  { printf '%sError:%s %s\n' "$r" "$n" "$*" >&2; exit 1; }
 warn() { printf '%sWarning:%s %s\n' "$y" "$n" "$*"; }
 
 cat <<EOF
-${b}☕  MyKettle installer${n}
+${b}☕  MyKettle installer${n} 0.1.0 · © 2026 Tony Ayre · GPL-3.0-or-later
 This installs:
   • a small Python service that talks to the kettle on your LAN  -> $DATA
   • the 'mykettle' command                                        -> $BIN/mykettle
@@ -61,6 +63,7 @@ fi
 install -m 644 "$HERE/backend/mykettle.py" "$HERE/backend/setup_wizard.py" "$DATA/"
 mkdir -p "$DATA/docs"
 install -m 644 "$HERE/docs/SETUP.md" "$DATA/docs/SETUP.md"
+install -m 644 "$HERE/LICENSE" "$DATA/LICENSE"
 
 cat > "$BIN/mykettle" <<EOF
 #!/bin/sh

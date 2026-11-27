@@ -1,3 +1,7 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Tony Ayre <me@tonyayre.net>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 import QtQuick
 import org.kde.plasma.configuration
 
