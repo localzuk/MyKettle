@@ -266,5 +266,7 @@ PlasmoidItem {
         interval: 400
         onTriggered: root.refresh()
     }
-    onExpandedChanged: if (expanded) refresh()
+    onExpandedChanged: {
+        if (root.expanded) root.refresh()
+    }
 }

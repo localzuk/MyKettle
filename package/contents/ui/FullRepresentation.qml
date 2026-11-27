@@ -220,11 +220,17 @@ PlasmaExtras.Representation {
                     Layout.fillWidth: true
                     visible: root.has("warm_time")
                     PlasmaComponents3.Label { text: i18n("Keep warm for"); Layout.fillWidth: true }
-                    PlasmaComponents3.ComboBox {
-                        visible: root.has("warm_time") && root.roles.warm_time.type === "Enum"
-                        model: visible ? root.roles.warm_time.range : []
-                        currentIndex: visible ? model.indexOf(String(root.val("warm_time"))) : -1
-                        onActivated: index => root.setRole("warm_time", model[index])
+                    // Only built when the kettle has the setting (Plasma's ComboBox
+                    // logs a harmless binding-loop warning whenever it exists).
+                    Loader {
+                        active: root.has("warm_time") && root.roles.warm_time.type === "Enum"
+                        visible: active
+                        sourceComponent: PlasmaComponents3.ComboBox {
+                            readonly property var options: root.roles.warm_time.range || []
+                            model: options
+                            currentIndex: options.indexOf(String(root.val("warm_time")))
+                            onActivated: index => root.setRole("warm_time", options[index])
+                        }
                     }
                     PlasmaComponents3.SpinBox {
                         visible: root.has("warm_time") && root.roles.warm_time.type === "Integer"
@@ -244,16 +250,16 @@ PlasmaExtras.Representation {
                     Layout.fillWidth: true
                     visible: root.has("mode")
                     PlasmaComponents3.Label { text: i18n("Mode"); Layout.fillWidth: true }
-                    PlasmaComponents3.ComboBox {
-                        id: modeBox
-                        model: root.has("mode") ? root.roles.mode.range : []
-                        displayText: root.humanize(currentText)
-                        currentIndex: root.has("mode") ? model.indexOf(String(root.val("mode"))) : -1
-                        onActivated: index => root.setRole("mode", model[index])
-                        delegate: PlasmaComponents3.ItemDelegate {
-                            width: modeBox.width
-                            text: root.humanize(modelData)
-                            highlighted: modeBox.highlightedIndex === index
+                    Loader {
+                        active: root.has("mode")
+                        visible: active
+                        sourceComponent: PlasmaComponents3.ComboBox {
+                            // value = raw Tuya enum, text = readable label
+                            model: (root.roles.mode.range || []).map(v => ({ value: String(v), text: root.humanize(v) }))
+                            textRole: "text"
+                            valueRole: "value"
+                            currentIndex: indexOfValue(String(root.val("mode")))
+                            onActivated: index => root.setRole("mode", currentValue)
                         }
                     }
                 }

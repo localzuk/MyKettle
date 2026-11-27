@@ -24,7 +24,7 @@ die()  { printf '%sError:%s %s\n' "$r" "$n" "$*" >&2; exit 1; }
 warn() { printf '%sWarning:%s %s\n' "$y" "$n" "$*"; }
 
 cat <<EOF
-${b}☕  MyKettle installer${n} 0.1.0 · © 2026 Tony Ayre · GPL-3.0-or-later
+${b}☕  MyKettle installer${n} 0.1.1 · © 2026 Tony Ayre · GPL-3.0-or-later
 This installs:
   • a small Python service that talks to the kettle on your LAN  -> $DATA
   • the 'mykettle' command                                        -> $BIN/mykettle
