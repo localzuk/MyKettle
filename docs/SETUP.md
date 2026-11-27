@@ -230,6 +230,10 @@ Available roles: `power`, `temp_current`, `temp_set`, `keep_warm`, `keep_warm_te
 * The service listens on **127.0.0.1 only**. It rejects requests with a foreign `Host` header (to block DNS rebinding) and requires a custom header for changes, so websites open in your browser can't switch your kettle on.
 * Any program running as your user *can* control the kettle through the service. This is the same trust level as the rest of your desktop session.
 
+## Licences
+
+MyKettle is © 2026 Tony Ayre and licensed under GPL-3.0-or-later. To see every library it uses and read their licences, open *Configure MyKettle… → Licences* in the widget, run `mykettle about`, or choose *About MyKettle* in the setup wizard.
+
 ## Uninstall
 
 ```bash

@@ -862,6 +862,12 @@ def cmd_about(args):
         if not text:
             sys.exit(f"No licence text found for '{args.license}'.")
         print(text)
+    elif args.json:
+        comps = [{"name": c["name"], "version": str(c["version"]), "license": c["license"],
+                  "url": c.get("url", ""), "role": c["role"],
+                  "has_text": bool(c.get("file") or c.get("dist"))} for c in components()]
+        print(json.dumps({"version": __version__, "copyright": COPYRIGHT,
+                          "license": LICENSE_NAME, "components": comps}))
     else:
         about_interactive()
 
@@ -895,6 +901,7 @@ def main(argv=None):
     s = sub.add_parser("about", aliases=["licenses", "licences"],
                        help="version, copyright, third-party components and their licences")
     s.add_argument("--license", metavar="NAME", help="print the full licence text of one component")
+    s.add_argument("--json", action="store_true", help="machine-readable list (used by the widget)")
     s.set_defaults(fn=cmd_about)
     args = p.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,

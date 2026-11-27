@@ -43,6 +43,6 @@ Copyright © 2026 Tony Ayre <me@tonyayre.net>
 
 MyKettle is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY. See [LICENSE](LICENSE) for details.
 
-To see the third-party libraries MyKettle uses and their licences, run `mykettle about`, or choose *About MyKettle* in the setup wizard.
+To see the third-party libraries MyKettle uses and their licences, run `mykettle about`, choose *About MyKettle* in the setup wizard, or open *Configure MyKettle… → Licences* in the widget.
 
 MyKettle is not affiliated with Tuya, SETTI+ or GÖTZE & JENSEN. All trademarks belong to their owners.

@@ -16,4 +16,9 @@ ConfigModel {
         icon: "mykettle"
         source: "ConfigSetup.qml"
     }
+    ConfigCategory {
+        name: i18n("Licences")
+        icon: "license"
+        source: "ConfigLicences.qml"
+    }
 }
