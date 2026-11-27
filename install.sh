@@ -17,6 +17,12 @@ ICON_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/scalable/apps"
 PLASMOID_ID="org.kde.plasma.mykettle"
 RUN_WIZARD=1
 [[ "${1:-}" == "--no-wizard" ]] && RUN_WIZARD=0
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mykettle/config.json"
+VERSION="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$HERE/backend/mykettle.py")"
+OLD_VERSION=""
+if [[ -f "$DATA/mykettle.py" ]]; then
+  OLD_VERSION="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$DATA/mykettle.py")"
+fi
 
 b=$'\e[1m'; g=$'\e[32m'; y=$'\e[33m'; r=$'\e[31m'; n=$'\e[0m'
 step() { printf '\n%s==>%s %s%s%s\n' "$g" "$n" "$b" "$*" "$n"; }
@@ -24,7 +30,7 @@ die()  { printf '%sError:%s %s\n' "$r" "$n" "$*" >&2; exit 1; }
 warn() { printf '%sWarning:%s %s\n' "$y" "$n" "$*"; }
 
 cat <<EOF
-${b}☕  MyKettle installer${n} 0.1.1 · © 2026 Tony Ayre · GPL-3.0-or-later
+${b}☕  MyKettle installer${n} ${VERSION} · © 2026 Tony Ayre · GPL-3.0-or-later
 This installs:
   • a small Python service that talks to the kettle on your LAN  -> $DATA
   • the 'mykettle' command                                        -> $BIN/mykettle
@@ -120,25 +126,36 @@ else
 fi
 
 # --------------------------------------------------------------------------
-if [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/mykettle/config.json" ]]; then
-  step "Existing kettle configuration found - keeping it"
-  RUN_WIZARD_DEFAULT=n
-else
-  RUN_WIZARD_DEFAULT=y
+if [[ -f "$CONFIG_FILE" ]]; then
+  # ---------------------------------------------------------------- update
+  if [[ -n "$OLD_VERSION" && "$OLD_VERSION" != "$VERSION" ]]; then
+    headline="Updated MyKettle from ${OLD_VERSION} to ${VERSION}."
+  else
+    headline="MyKettle ${VERSION} reinstalled."
+  fi
+  cat <<EOF
+
+${g}${b}${headline}${n}
+Your kettle settings were kept and the background service has been restarted.
+EOF
+  if [[ "${UPGRADED:-0}" == 1 ]]; then
+    echo "Restart Plasma to load the new widget:  systemctl --user restart plasma-plasmashell"
+  fi
+  cat <<EOF
+Change kettle settings:  ${b}mykettle setup${n}    Check everything:  ${b}mykettle doctor${n}
+EOF
+  exit 0
 fi
 
+# -------------------------------------------------------------- first install
 cat <<EOF
 
-${g}${b}Installed.${n}
+${g}${b}MyKettle ${VERSION} installed.${n}
 EOF
-if [[ "${UPGRADED:-0}" == 1 ]]; then
-  echo "If the widget looks unchanged, restart Plasma:  systemctl --user restart plasma-plasmashell"
-fi
 
 if [[ $RUN_WIZARD == 1 && -t 0 ]]; then
-  read -r -p "Run the setup wizard now? [${RUN_WIZARD_DEFAULT^^}/$( [[ $RUN_WIZARD_DEFAULT == y ]] && echo n || echo y )] " ans
-  ans="${ans:-$RUN_WIZARD_DEFAULT}"
-  if [[ "${ans,,}" == y* ]]; then
+  read -r -p "Run the setup wizard now? [Y/n] " ans
+  if [[ "${ans,,}" != n* ]]; then
     exec "$BIN/mykettle" setup
   fi
 fi

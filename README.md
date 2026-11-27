@@ -1,6 +1,6 @@
 # ☕ MyKettle
 
-*Version 0.1.1*
+*Version 0.1.2*
 
 A KDE Plasma 6 widget for Tuya-based smart kettles that you'd normally control with the **SETTI+** app, such as the **GÖTZE & JENSEN KT975K**. It controls the kettle directly over your Wi-Fi, with no cloud involved once it's set up.
 
